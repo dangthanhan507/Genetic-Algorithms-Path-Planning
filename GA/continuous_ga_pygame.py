@@ -2,10 +2,10 @@ import pygad
 import numpy as np
 from vector import Vector
 from Map import Map
-'''
-This file contains the classes and software necessary to work create a genetic algorithm solver for a grid.
-This is based on a constant amount of nodes that the genetic algorithm has to work with.
-'''
+
+from pygame_visuals import Grid
+import pygame
+import time
 
 class GA_Solver:
     def __init__(self, MAP, generations: int, parents_mating: int, \
@@ -23,7 +23,12 @@ class GA_Solver:
         self.solution = None
         self.solution_fitness = None
         
+        
+        
         self.map = MAP
+        shape = self.map.get_grid().shape
+        self.GRID = Grid(shape[0],shape[1],40,3,start=self.map.get_start(),end=self.map.get_end(), obstacles=[], solution=[])
+        
         
     def fitness_func(self, solution, solution_idx):
         penalty = 0
@@ -35,14 +40,22 @@ class GA_Solver:
         pts = [tuple(solution[i:i+2]) for i in range(0,self.num_genes,2)]
         end = self.map.get_end()
         
+        sol_tup = [(solution[i],solution[i+1]) for i in range(0,len(solution),2)]
+        
         
         cross_penalty = [9999999999999999 for i in pts if grid[i[::-1]] > 0]
-        print(f'incorrect node selection: {len(cross_penalty)}')
+        #print(f'incorrect node selection: {len(cross_penalty)}')
         penalty += sum(cross_penalty)
         
         obstacles_idx = np.where(grid==1)
         obstacles_idx = list(zip(obstacles_idx[1], obstacles_idx[0]))
         
+        obs_tup = obstacles_idx
+        
+        self.GRID.set_obstacles(obs_tup)
+        self.GRID.set_solution(sol_tup)
+        self.GRID.draw()
+        time.sleep(0.5)
         
         dis = 0
         for i in range(len(pts)+1):
@@ -53,9 +66,9 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(start,pts[i],j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
+                        #print(f'  Obstructed at point {j}.')
                 
-                print(f'penalty of {start} to {pts[i]}: {len(ls_penalty)}')
+                #print(f'penalty of {start} to {pts[i]}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             elif i == len(pts):
                 vec = Vector(end[0] - pts[i-1][0], end[1] - pts[i-1][1])
@@ -63,8 +76,8 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(pts[i-1],end,j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
-                print(f'penalty of {pts[i-1]} to {end}: {len(ls_penalty)}')
+                        #print(f'  Obstructed at point {j}.')
+                #print(f'penalty of {pts[i-1]} to {end}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             else:
                 vec = Vector(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1])
@@ -72,13 +85,13 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(pts[i-1],pts[i],j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
+                        #print(f'  Obstructed at point {j}.')
                 
-                print(f'penalty of {pts[i-1]} to {pts[i]}: {len(ls_penalty)}')
+                #print(f'penalty of {pts[i-1]} to {pts[i]}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             vec_dis = vec.distance()
             dis += vec_dis
-        print()
+        #print()
         return 1.0 / (dis+penalty)
         
         
@@ -109,7 +122,26 @@ class GA_Solver:
     
     def produce_sol_grid(self):
         sol = self.convert_solution()
-        grid = np.copy(self.map.get_grid())
-        for i in sol:
-            grid[i[::-1]] = 5
-        return grid
+        self.GRID.set_solution(sol)
+        self.GRID.draw()
+    
+    
+pygame.init()
+
+obstacles = [(7,0), (8, 0), (9, 0), (4, 3), (0, 4), (1, 4), \
+             (3, 4), (4, 4), (0, 5), (1, 5), (3, 5), (4, 5), \
+             (7, 7), (8, 7), (7, 8), (8, 8)]
+
+shape = (10,10)
+MAP = Map(start=(0,0), end=(9,9), obstacles=obstacles, shape=shape)
+
+ga = GA_Solver(MAP, generations=50, parents_mating=4, solutions_per_pop=100, num_nodes=8, thresh=(0,10), mutation_percent=10)
+ga.train_ga()
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.display.quit()
+            pygame.quit()
+            running = False
