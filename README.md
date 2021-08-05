@@ -4,9 +4,9 @@
 
 This package does path planning with genetic algorithms in a grid-world. Visualizations with pygame.
 
-Install:
+## Install:
 
-Optional: create a virtual environment
+Optional: create a [virtual environment](https://docs.python.org/3/tutorial/venv.html).
 
 ```bash
 pip install -r requirements.txt
