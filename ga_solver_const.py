@@ -37,7 +37,7 @@ class GA_Solver:
         
         
         cross_penalty = [9999999999999999 for i in pts if grid[i[::-1]] > 0]
-        print(f'incorrect node selection: {len(cross_penalty)}')
+        #print(f'incorrect node selection: {len(cross_penalty)}')
         penalty += sum(cross_penalty)
         
         obstacles_idx = np.where(grid==1)
@@ -53,9 +53,9 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(start,pts[i],j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
+                        #print(f'  Obstructed at point {j}.')
                 
-                print(f'penalty of {start} to {pts[i]}: {len(ls_penalty)}')
+                #print(f'penalty of {start} to {pts[i]}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             elif i == len(pts):
                 vec = Vector(end[0] - pts[i-1][0], end[1] - pts[i-1][1])
@@ -63,8 +63,8 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(pts[i-1],end,j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
-                print(f'penalty of {pts[i-1]} to {end}: {len(ls_penalty)}')
+                        #print(f'  Obstructed at point {j}.')
+                #print(f'penalty of {pts[i-1]} to {end}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             else:
                 vec = Vector(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1])
@@ -72,16 +72,14 @@ class GA_Solver:
                 for j in obstacles_idx:
                     if self.map.obstacle_obstructed(pts[i-1],pts[i],j):
                         ls_penalty.append(99999999)
-                        print(f'  Obstructed at point {j}.')
+                        #print(f'  Obstructed at point {j}.')
                 
-                print(f'penalty of {pts[i-1]} to {pts[i]}: {len(ls_penalty)}')
+                #print(f'penalty of {pts[i-1]} to {pts[i]}: {len(ls_penalty)}')
                 penalty += sum(ls_penalty)
             vec_dis = vec.distance()
-            if vec_dis == 0:
-                penalty += 99999999
             dis += vec_dis
-        print()
-        return 1.0 / (dis+1) - penalty
+        #print()
+        return 1.0 / (dis+penalty)
         
         
     def train_ga(self):

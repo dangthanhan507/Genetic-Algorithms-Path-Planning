@@ -107,11 +107,11 @@ MAP = Map(start=(0,0), end=(9,9), obstacles=obstacles, shape=shape)
 '''
 GA solves the environment
 '''
-ga = GA_Solver(MAP, generations=50, parents_mating=20, solutions_per_pop=200, num_nodes=4, thresh=(0,10), mutation_percent=20)
+ga = GA_Solver(MAP, generations=100, parents_mating=20, solutions_per_pop=50, num_nodes=8, thresh=(0,10), mutation_percent=20)
 ga.train_ga()
 
-solution = ga.convert_solution()
 
+solution = ga.convert_solution()
 
 '''
 draw the solution grid
@@ -127,4 +127,3 @@ while running:
             pygame.quit()
             running = False
     
-
