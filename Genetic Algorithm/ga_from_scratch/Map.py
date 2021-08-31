@@ -60,13 +60,8 @@ class Map:
             return -1
 
     def obstacle_obstructed(self, start: (int,int), end: (int,int), obstacle: (int,int)):
-        traj_vector = np.array([end[0] - start[0], end[1] - start[1]])
-        obj_vector = np.array([obstacle[0] - start[0], obstacle[1] - start[1]])
-
-        obj_2_traj = traj_vector - obj_vector
-
         traj_vector = Vector(end[0] - start[0], end[1] - start[1])
-        obj_vector = Vector(obstacle[0] - start[0], obstacle[1] - start[1])
+        obj_vector = Vector(end[0] - obstacle[0], end[1] - obstacle[1])
         
         dot = traj_vector * obj_vector
 
