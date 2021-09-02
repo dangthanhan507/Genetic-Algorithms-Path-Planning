@@ -130,7 +130,8 @@ class IGA:
         '''
 
         '''
-        return 1 / self.path_length(chromosome)
+        return 1 / (self.path_length(chromosome) + \
+                    (0 if self.check_feasibility_path(chromosome) else 10000000))
     def fitness(self): #calculating basic fitness function
         '''
 
@@ -224,13 +225,16 @@ class IGA:
         '''
         self.init_population()
         for _ in range(self.generations):
-            ga.selection()
-            ga.crossover()
-            ga.mutation_add()
-            ga.mutation_remove()
+            self.selection()
+            self.crossover()
+            self.mutation_add()
+            self.mutation_remove()
 
     def solution(self):
         fitness_arr = self.fitness()
-        return self.population[np.argmin(self.fitness())]
+        return self.population[np.argmax(self.fitness())]
 
+    def convert_solution(self):
+        solution = self.solution()
+        return [(j,i)for i,j in solution]
     #get/set operators

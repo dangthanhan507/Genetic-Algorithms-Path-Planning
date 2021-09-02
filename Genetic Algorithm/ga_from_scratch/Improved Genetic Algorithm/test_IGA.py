@@ -3,7 +3,7 @@ from map_lib import original_map, map2, map3
 
 
 if __name__ == '__main__':
-    obstacles, shape, MAP = map3()
+    obstacles, shape, MAP = original_map()
     ga = IGA(50, 8, 10, MAP)
     
     ga.init_population()
@@ -60,4 +60,5 @@ if __name__ == '__main__':
 
         print('SOLUTION:')
         print('  ', ga.solution())
+        print('  ', ga.convert_solution())
         print('  ', ga.fitness_function(ga.solution()))
