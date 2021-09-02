@@ -58,7 +58,7 @@ class IGA:
             path.append(end) 
             self.population.append(path[1:len(path)-1]) #add feasible path to population
         
-        self.population = np.array(self.population)
+        self.population = np.array(self.population,dtype=object)
 
     def path_length(self, chromosome):
         '''
@@ -74,7 +74,7 @@ class IGA:
                 prev_x,prev_y = start
             elif idx_node == len(chromosome):
                 node_x,node_y = end
-                prev_x,prev_y = chromosome[idx_node]
+                prev_x,prev_y = chromosome[idx_node-1]
             else:
                 node_x,node_y = chromosome[idx_node]
                 prev_x,prev_y = chromosome[idx_node-1]
@@ -84,7 +84,7 @@ class IGA:
 
     def check_feasibility_path(self, path):
         grid = self.map.get_grid()
-        obstacles = np.array(list(zip(*np.where(grid==1))))[:,::-1]
+        obstacles = self.map.get_obstacles()
         for i in range(len(path)+1):
             #choosing a set of two points to compare if is obstructed
             if i == 0:
@@ -111,13 +111,16 @@ class IGA:
 
         random_select_idx = random.randint(0,len(chromosome)-1)
         random_select = chromosome[random_select_idx]
-
-        if random_select_idx == 0: #if it is at very start, include starting waypoint as neighbor
+        if len(chromosome) == 1:
+            neighbor_back = start
+            neighbor_front = end
+        elif random_select_idx == 0: #if it is at very start, include starting waypoint as neighbor
             neighbor_back = start
             neighbor_front = chromosome[random_select_idx + 1]
-        elif random_select_idx == len(path)-1: #if it is at very end, include ending waypoint as neighbor
+        elif random_select_idx == len(chromosome)-1: #if it is at very end, include ending waypoint as neighbor
             neighbor_back = chromosome[random_select_idx - 1]
             neighbor_front = end
+        
         else: #else treat neighbors at indices left and right
             neighbor_back = chromosome[random_select_idx - 1]
             neighbor_front = chromosome[random_select_idx + 1]
@@ -143,37 +146,41 @@ class IGA:
         '''
         fitness_pop = self.fitness()
         p_weights = fitness_pop / np.sum(fitness_pop)
-        return np.random.choice(self.population, self.parents_mating, p=p_weights, replace=False)
+        self.population = np.random.choice(self.population, self.parents_mating, p=p_weights, replace=False)
 
     def crossover(self): #single-point crossover operator
         '''
 
         '''
         parents = self.population
-        assert parents.shape >= 2
-        assert parents.shape%2 == 0
-        assert parents[0].shape[0] != 0
+        assert parents.shape[0] >= 2
+        assert parents.shape[0]%2 == 0
 
         offsprings = []
-        for path in range(0,parents.shape[0], 2): #iterate every other path
-            parent1_idx, parent2_dx = i, i+1
-            crossover_point = max(parents[parent1_idx].shape[0], \
-                                    parents[parent2_idx].shape[0]) // 2
+        for i in range(0,parents.shape[0], 2): #iterate every other path
+            parent1_idx, parent2_idx = i, i+1
+            crossover_point = max(len(parents[parent1_idx]), \
+                                    len(parents[parent2_idx])) // 2
             offspring_path1 = parents[parent1_idx][0:crossover_point] + parents[parent2_idx][crossover_point:]
             offspring_path2 = parents[parent2_idx][0:crossover_point] + parents[parent1_idx][crossover_point:]
+            
+            offsprings.append(offspring_path1)
+            offsprings.append(offspring_path2)
 
-        return np.array(offspring, dtype=object) #return np array of offsprings
+        return np.array(offsprings, dtype=object) #return np array of offsprings
 
     def mutation_add(self): #custom 3-point add mutation
         '''
 
         '''
+        mutated_paths = np.random.choice(self.population, self.init_pop_size - self.parents_mating, replace=False)
+
         start = self.map.get_start()
         end = self.map.get_end()
 
-
-        for chromosome in self.population: #iterating through each path
-            back_node, rand_node, rand_idx, front_node = random_node_selection(chromosome, start,end)
+        
+        for chromosome in mutated_paths: #iterating through each path
+            back_node, rand_node, rand_idx, front_node = self.random_node_selection(chromosome)
 
             #list of grids traversed from line from behind node to node
             grids_back2curr = mapGeometry.bresenham(back_node, rand_node) 
@@ -194,8 +201,8 @@ class IGA:
             else:
                 curr2front_idx = random.randint(0, len_grids_curr2front-1)
                 add_curr2front_node = grids_curr2front[curr2front_idx]
-        #doesn't need return since the lists (references) are modified within np.array 
-        #so the population is modified
+
+        self.population = np.concatenate((self.population, mutated_paths))
 
     def mutation_remove(self): #custom 1-point removal mutation
         '''
@@ -208,16 +215,22 @@ class IGA:
         end = self.map.get_end()
         for i in range(size):
             path = self.population[i]
-            init, random_select, random_select_idx, final = self.random_node_selection(path,start,end)
-            if not any([mapGeometry.obstacle_obstructed(init,final,obstacle) for obstacle in self.get_obstacles()]):
+            init, random_select, random_select_idx, final = self.random_node_selection(path)
+            if not any([mapGeometry.obstacle_obstructed(init,final,obstacle) for obstacle in self.map.get_obstacles()]):
                 path.pop(random_select_idx)
 
     def train(self): #training chromosomes of the IGA
         '''
         '''
-        #for iteration in range(self.generations):
-        pass
+        self.init_population()
+        for _ in range(self.generations):
+            ga.selection()
+            ga.crossover()
+            ga.mutation_add()
+            ga.mutation_remove()
 
-
+    def solution(self):
+        fitness_arr = self.fitness()
+        return self.population[np.argmin(self.fitness())]
 
     #get/set operators

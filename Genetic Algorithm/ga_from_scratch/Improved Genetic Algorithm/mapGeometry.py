@@ -131,7 +131,8 @@ def bresenham(point0, point1):
                 y += sy
 
         path_list.append( (x,y) )
-    
-    path_list.remove( (x0,y0) )
-    path_list.remove( (x1,y1) )
+    if (x0,y0) in path_list:
+        path_list.remove( (x0,y0) )
+    if (x1,y1) in path_list:
+        path_list.remove( (x1,y1) )
     return path_list
