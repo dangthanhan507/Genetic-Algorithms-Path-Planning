@@ -3,7 +3,7 @@ from vector import Vector
 
 '''
     Map stores everything. 
-    
+
 '''
 
 class Map:
@@ -29,7 +29,8 @@ class Map:
             self.grid[i[::-1]] = 1
 
         self.obstacles = obstacles
-        self.free_space = self.grid[np.where(self.grid==0)]
+        self.free_space = [(j,i) for i,j in zip(*np.where(self.grid!=1))]
+
 
     def get_start(self):
         return self.start

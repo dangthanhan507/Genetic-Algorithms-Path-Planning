@@ -26,6 +26,7 @@ def obstacle_threshold(start: (int,int), obstacle: (int,int)):
 
 def sign(x): return 1 if x>=0 else -1
 
+
 def obstacle_obstructed(start: (int,int), end: (int,int), obstacle: (int,int)):
     '''
         takes in a start and end point and creates a waypoint from start to end.
@@ -66,16 +67,32 @@ def obstacle_obstructed(start: (int,int), end: (int,int), obstacle: (int,int)):
     return threshold[0] <= angle_traj <= threshold[1]
 
 def visible_space(start: (int,int), free_space: [(int,int)], obstacles: [(int,int)]):
+    '''
+        given a current position and map of surroundings, generates possible waypoints to travel to.
+        input:
+            start: (int,int)
+            free_space: [(int,int)]
+            obstacles [(int,int)]
+
+            Note: free_space and obstacles should be mutually exclusive
+        output:
+            list of waypoints that can be travelled
+            [(int,int)]
+    '''
     return [space for space in free_space \
         if not np.any([obstacle_obstructed(start, space, obstacle) \
             for obstacle in obstacles])]
 
 def visible_space_set(start: (int,int), free_space: [(int,int)], obstacles: [(int,int)]):
+    '''
+        same as visible_space but returns a set instead of a list
+    '''
     return {space for space in free_space \
         if not np.any([obstacle_obstructed(start, space, obstacle) \
             for obstacle in obstacles])}
 
-def bresenham(x0: int, y0: int, x1: int, y1: int):
+def bresenham(point0, point1):
+
     '''
         integer calculation of grids traversed with line using line interpolation
         and other math stuffs.
@@ -83,6 +100,9 @@ def bresenham(x0: int, y0: int, x1: int, y1: int):
         input: (x0,y0) and (x1,y1)
         output: list of grids traversed
     '''
+    x0,y0 = point0
+    x1,y1 = point1
+
     if x1-x0 == 0:
         dy = y1-y0
         sig = 1 if dy > 0 else -1
