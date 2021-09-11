@@ -233,8 +233,4 @@ class IGA:
     def solution(self):
         fitness_arr = self.fitness()
         return self.population[np.argmax(self.fitness())]
-
-    def convert_solution(self):
-        solution = self.solution()
-        return [(j,i)for i,j in solution]
     #get/set operators

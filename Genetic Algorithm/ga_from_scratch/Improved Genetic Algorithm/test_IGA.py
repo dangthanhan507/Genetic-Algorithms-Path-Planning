@@ -60,5 +60,4 @@ if __name__ == '__main__':
 
         print('SOLUTION:')
         print('  ', ga.solution())
-        print('  ', ga.convert_solution())
         print('  ', ga.fitness_function(ga.solution()))

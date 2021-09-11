@@ -6,9 +6,9 @@ from pygame_visuals import Grid
 import pygame
 pygame.init()
 
-obstacles, shape, MAP = map_lib.map4()
+obstacles, shape, MAP = map_lib.map3()
 
-ga = IGA(generations=20, parents_mating=2, init_pop_size=4, MAP=MAP)
+ga = IGA(generations=20, parents_mating=8, init_pop_size=10, MAP=MAP)
 ga.train()
 solution = ga.solution()
 if ga.check_feasibility_path(ga.solution()):
